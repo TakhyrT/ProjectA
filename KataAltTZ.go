@@ -4,13 +4,14 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 )
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("Введите выражение")
+	fmt.Println("Введите выражение:")
 	input, err := reader.ReadString('\n')
 	if err != nil {
 		panic("ошибка")
@@ -18,7 +19,7 @@ func main() {
 
 	input = strings.TrimSpace(input)
 
-	if len(input) > 20 {
+	if len(input) > 30 {
 		panic("ошибка")
 	}
 
@@ -63,12 +64,21 @@ func strS(input string) (string, error) {
 }
 
 func strV(input string) (string, error) {
-	index := strings.Index(input, "-")
-	if index == -1 {
-		return input, nil
+	re := regexp.MustCompile(`"([^"]*)" *- *"([^"]*)"`)
+	matches := re.FindStringSubmatch(input)
+
+	if len(matches) != 3 {
+		return strings.Trim(input, `"`), nil
 	}
-	result := strings.TrimSpace(input[:index])
-	return result, nil
+
+	firstPart := matches[1]
+	secondPart := matches[2]
+	
+	if !strings.Contains(firstPart, secondPart) {
+		return firstPart, nil
+	}
+
+	return strings.Replace(firstPart, secondPart, "", 1), nil
 }
 
 func strU(input string) (string, error) {
